@@ -338,7 +338,7 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
           >
             {/* Locked Built-in Floor Plan Background */}
             <img
-              src="/floorplan2.png"
+              src="/floorplan2.jpg"
               alt="مخطط بيوتي الأردن 27"
               draggable={false}
               className="pointer-events-none block h-full w-full select-none"

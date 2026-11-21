@@ -10,18 +10,41 @@ import {
   downloadFloorPlanPng,
 } from './utils/exportFloorPlan';
 
-const STORAGE_KEY = 'beauty-jordan-27-booths-v1';
+const STORAGE_KEY = 'beauty-jordan-27-booths-v2';
+const LEGACY_STORAGE_KEY = 'beauty-jordan-27-booths-v1';
 const LABELS_STORAGE_KEY = 'beauty-jordan-27-show-labels-v1';
 
 function loadSavedBooths(): Booth[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return createInitialBooths();
-    const parsed = JSON.parse(raw) as Booth[];
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return createInitialBooths();
+    if (raw) {
+      const parsed = JSON.parse(raw) as Booth[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
-    return parsed;
+    // Migrate exhibitor data from v1 onto updated 791x1024 coordinates if present
+    const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacyRaw) {
+      const legacyParsed = JSON.parse(legacyRaw) as Booth[];
+      if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
+        const legacyById = new Map(legacyParsed.map((b) => [b.id, b]));
+        return createInitialBooths().map((fresh) => {
+          const old = legacyById.get(fresh.id);
+          if (!old) return fresh;
+          return {
+            ...fresh,
+            exhibitorName: old.exhibitorName || '',
+            logoDataUrl: old.logoDataUrl ?? null,
+            logoScale: old.logoScale ?? fresh.logoScale,
+            logoAlign: old.logoAlign ?? fresh.logoAlign,
+            displayMode: old.displayMode ?? fresh.displayMode,
+            hideCode: old.hideCode ?? false,
+          };
+        });
+      }
+    }
+    return createInitialBooths();
   } catch {
     return createInitialBooths();
   }

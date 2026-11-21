@@ -1,6 +1,6 @@
 import { Booth, BoothZone, ZoneMeta } from '../types';
 
-export const MAP_WIDTH = 832;
+export const MAP_WIDTH = 791;
 export const MAP_HEIGHT = 1024;
 
 export const ZONES: Record<BoothZone, ZoneMeta> = {
@@ -99,101 +99,101 @@ function makeBooth(
 export function createInitialBooths(): Booth[] {
   return [
     // Diamond (100m² / 110m² Red)
-    makeBooth('A03', 'diamond', 352, 723, 64, 66),
+    makeBooth('A03', 'diamond', 329, 725, 67, 67),
 
     // Platinum (60m² Yellow)
-    makeBooth('A01', 'platinum', 234, 797, 49, 66),
-    makeBooth('A02', 'platinum', 298, 797, 49, 66),
+    makeBooth('A01', 'platinum', 212, 800, 49, 66),
+    makeBooth('A02', 'platinum', 276, 800, 49, 66),
 
     // Gold & Teal (50m² Teal) - Left section (B01-B04)
-    makeBooth('B03', 'gold', 124, 570, 33, 65),
-    makeBooth('B04', 'gold', 175, 570, 33, 65),
-    makeBooth('B02', 'gold', 124, 654, 33, 65),
-    makeBooth('B01', 'gold', 175, 654, 33, 65),
+    makeBooth('B03', 'gold', 100, 571, 34, 66),
+    makeBooth('B04', 'gold', 152, 571, 33, 66),
+    makeBooth('B02', 'gold', 100, 656, 34, 65),
+    makeBooth('B01', 'gold', 152, 656, 33, 65),
 
     // Gold & Teal (50m² Teal) - Right section (B11-B25)
-    makeBooth('B11', 'gold', 509, 420, 65, 33),
-    makeBooth('B12', 'gold', 592, 420, 65, 33),
-    makeBooth('B13', 'gold', 675, 420, 65, 33),
+    makeBooth('B11', 'gold', 489, 419, 66, 33),
+    makeBooth('B12', 'gold', 573, 419, 66, 33),
+    makeBooth('B13', 'gold', 657, 419, 66, 33),
 
-    makeBooth('B16', 'gold', 509, 471, 65, 33),
-    makeBooth('B15', 'gold', 592, 471, 65, 33),
-    makeBooth('B14', 'gold', 675, 471, 65, 33),
+    makeBooth('B16', 'gold', 489, 470, 66, 34),
+    makeBooth('B15', 'gold', 573, 470, 66, 34),
+    makeBooth('B14', 'gold', 657, 470, 66, 34),
 
-    makeBooth('B17', 'gold', 509, 522, 65, 33),
-    makeBooth('B18', 'gold', 592, 522, 65, 33),
-    makeBooth('B19', 'gold', 675, 522, 65, 33),
+    makeBooth('B17', 'gold', 489, 522, 66, 34),
+    makeBooth('B18', 'gold', 573, 522, 66, 34),
+    makeBooth('B19', 'gold', 657, 522, 66, 34),
 
-    makeBooth('B22', 'gold', 509, 573, 65, 33),
-    makeBooth('B21', 'gold', 592, 573, 65, 33),
-    makeBooth('B20', 'gold', 675, 573, 65, 33),
+    makeBooth('B22', 'gold', 489, 574, 66, 33),
+    makeBooth('B21', 'gold', 573, 574, 66, 33),
+    makeBooth('B20', 'gold', 657, 574, 66, 33),
 
-    makeBooth('B23', 'gold', 509, 624, 65, 33),
-    makeBooth('B24', 'gold', 592, 624, 65, 33),
-    makeBooth('B25', 'gold', 675, 624, 65, 33),
+    makeBooth('B23', 'gold', 489, 625, 66, 34),
+    makeBooth('B24', 'gold', 573, 626, 66, 33),
+    makeBooth('B25', 'gold', 657, 625, 66, 34),
 
     // Silver (25m² Orange, stacked pairs)
-    makeBooth('B07', 'silver', 124, 404, 33, 66),
-    makeBooth('B08', 'silver', 174, 405, 34, 65),
-    makeBooth('B06', 'silver', 124, 488, 33, 64),
-    makeBooth('B05', 'silver', 174, 488, 34, 64),
+    makeBooth('B07', 'silver', 100, 404, 34, 66),
+    makeBooth('B08', 'silver', 151, 404, 35, 66),
+    makeBooth('B06', 'silver', 100, 487, 34, 66),
+    makeBooth('B05', 'silver', 151, 487, 34, 66),
 
     // Green (30m²) - C01-C03, C05-C12, C16-C26
-    makeBooth('C23', 'green', 340, 110, 41, 34),
-    makeBooth('C24', 'green', 398, 110, 40, 34),
+    makeBooth('C23', 'green', 319, 106, 41, 34),
+    makeBooth('C24', 'green', 377, 106, 41, 34),
 
-    makeBooth('C22', 'green', 283, 161, 40, 34),
-    makeBooth('C21', 'green', 340, 161, 41, 34),
-    makeBooth('C20', 'green', 398, 161, 40, 34),
+    makeBooth('C22', 'green', 262, 158, 40, 34),
+    makeBooth('C21', 'green', 319, 158, 41, 34),
+    makeBooth('C20', 'green', 377, 158, 41, 34),
 
-    makeBooth('C16', 'green', 226, 213, 39, 33),
-    makeBooth('C17', 'green', 283, 213, 40, 33),
-    makeBooth('C18', 'green', 340, 213, 41, 33),
-    makeBooth('C19', 'green', 398, 213, 40, 33),
+    makeBooth('C16', 'green', 202, 209, 41, 33),
+    makeBooth('C17', 'green', 261, 209, 41, 34),
+    makeBooth('C18', 'green', 319, 209, 41, 34),
+    makeBooth('C19', 'green', 377, 209, 41, 33),
 
-    makeBooth('C12', 'green', 226, 264, 39, 34),
-    makeBooth('C11', 'green', 284, 264, 39, 34),
-    makeBooth('C10', 'green', 340, 264, 41, 34),
-    makeBooth('C09', 'green', 398, 264, 40, 34),
-    makeBooth('C25', 'green', 451, 264, 40, 34),
+    makeBooth('C12', 'green', 203, 261, 40, 34),
+    makeBooth('C11', 'green', 261, 261, 41, 34),
+    makeBooth('C10', 'green', 319, 261, 41, 34),
+    makeBooth('C09', 'green', 377, 261, 41, 34),
+    makeBooth('C25', 'green', 431, 261, 40, 34),
 
-    makeBooth('C05', 'green', 225, 315, 40, 33),
-    makeBooth('C06', 'green', 283, 315, 40, 33),
-    makeBooth('C07', 'green', 340, 315, 41, 33),
-    makeBooth('C08', 'green', 398, 315, 40, 33),
-    makeBooth('C26', 'green', 451, 316, 40, 33),
+    makeBooth('C05', 'green', 202, 312, 41, 34),
+    makeBooth('C06', 'green', 261, 312, 41, 34),
+    makeBooth('C07', 'green', 319, 312, 41, 34),
+    makeBooth('C08', 'green', 377, 312, 41, 34),
+    makeBooth('C26', 'green', 431, 313, 40, 34),
 
-    makeBooth('C03', 'green', 225, 417, 40, 34),
-    makeBooth('C02', 'green', 226, 468, 39, 34),
-    makeBooth('C01', 'green', 226, 519, 39, 34),
+    makeBooth('C03', 'green', 203, 416, 40, 34),
+    makeBooth('C02', 'green', 203, 468, 40, 34),
+    makeBooth('C01', 'green', 203, 519, 40, 34),
 
     // Light Purple (12m²) - D01-D10
-    makeBooth('D05', 'lightPurple', 325, 405, 25, 19),
-    makeBooth('D04', 'lightPurple', 325, 424, 25, 19),
-    makeBooth('D03', 'lightPurple', 325, 443, 25, 19),
-    makeBooth('D02', 'lightPurple', 325, 462, 25, 20),
-    makeBooth('D01', 'lightPurple', 325, 481, 25, 20),
+    makeBooth('D05', 'lightPurple', 303, 404, 25, 19),
+    makeBooth('D04', 'lightPurple', 303, 423, 25, 19),
+    makeBooth('D03', 'lightPurple', 303, 442, 25, 19),
+    makeBooth('D02', 'lightPurple', 303, 461, 25, 19),
+    makeBooth('D01', 'lightPurple', 303, 480, 25, 20),
 
-    makeBooth('D06', 'lightPurple', 396, 406, 26, 19),
-    makeBooth('D07', 'lightPurple', 396, 425, 26, 19),
-    makeBooth('D08', 'lightPurple', 396, 444, 26, 19),
-    makeBooth('D09', 'lightPurple', 396, 463, 26, 19),
-    makeBooth('D10', 'lightPurple', 396, 482, 26, 19),
+    makeBooth('D06', 'lightPurple', 376, 404, 25, 19),
+    makeBooth('D07', 'lightPurple', 376, 423, 25, 19),
+    makeBooth('D08', 'lightPurple', 376, 442, 25, 19),
+    makeBooth('D09', 'lightPurple', 376, 461, 25, 19),
+    makeBooth('D10', 'lightPurple', 376, 480, 25, 20),
 
     // Dark Purple (340m² L-shape)
-    makeBooth('Q1', 'darkPurple', 111, 213, 97, 84, 'l-shape'),
+    makeBooth('Q1', 'darkPurple', 87, 210, 98, 85, 'l-shape'),
 
     // Light Blue (20m²) - H1-H10
-    makeBooth('H1', 'lightBlue', 479, 694, 35, 26),
-    makeBooth('H2', 'lightBlue', 531, 694, 35, 26),
-    makeBooth('H3', 'lightBlue', 582, 694, 34, 26),
-    makeBooth('H4', 'lightBlue', 638, 694, 34, 26),
-    makeBooth('H5', 'lightBlue', 690, 694, 34, 26),
+    makeBooth('H1', 'lightBlue', 460, 696, 35, 26),
+    makeBooth('H2', 'lightBlue', 512, 696, 35, 26),
+    makeBooth('H3', 'lightBlue', 563, 696, 35, 26),
+    makeBooth('H4', 'lightBlue', 620, 696, 35, 26),
+    makeBooth('H5', 'lightBlue', 672, 696, 35, 26),
 
-    makeBooth('H6', 'lightBlue', 479, 735, 35, 27),
-    makeBooth('H7', 'lightBlue', 531, 735, 34, 27),
-    makeBooth('H8', 'lightBlue', 582, 735, 34, 26),
-    makeBooth('H9', 'lightBlue', 638, 735, 36, 26),
-    makeBooth('H10', 'lightBlue', 691, 735, 34, 26),
+    makeBooth('H6', 'lightBlue', 460, 738, 35, 26),
+    makeBooth('H7', 'lightBlue', 511, 738, 35, 26),
+    makeBooth('H8', 'lightBlue', 563, 737, 35, 27),
+    makeBooth('H9', 'lightBlue', 620, 738, 36, 26),
+    makeBooth('H10', 'lightBlue', 673, 737, 35, 27),
   ];
 }

@@ -134,8 +134,8 @@ export async function renderFloorPlanToCanvas(
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-  // 1. Draw locked background image
-  const bg = await loadImage('/floorplan2.png');
+  // 1. Draw locked background image (original full-res image)
+  const bg = await loadImage('/floorplan2.jpg');
   ctx.drawImage(bg, 0, 0, MAP_WIDTH, MAP_HEIGHT);
 
   // 2. Cover original booth spots with white floor fill when moved or resized
