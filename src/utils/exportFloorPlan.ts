@@ -112,7 +112,13 @@ export async function renderFloorPlanToCanvas(
   booths: Booth[],
   showBoothLabels: boolean
 ): Promise<HTMLCanvasElement> {
-  const SCALE = 3;
+  // Wait for custom Arabic fonts (Cairo) to be ready for crisp text rendering
+  if (typeof document !== 'undefined' && document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+
+  // 6x scale => 4992 x 6144 px (ultra-sharp ~600 DPI on A4 & crystal-clear PNG)
+  const SCALE = 6;
   const canvas = document.createElement('canvas');
   canvas.width = MAP_WIDTH * SCALE;
   canvas.height = MAP_HEIGHT * SCALE;
@@ -122,6 +128,8 @@ export async function renderFloorPlanToCanvas(
     throw new Error('Could not initialize 2D canvas context');
   }
 
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.scale(SCALE, SCALE);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
@@ -349,6 +357,6 @@ export async function downloadFloorPlanPdf(
   const offsetX = (pageW - drawW) / 2;
   const offsetY = (pageH - drawH) / 2;
 
-  pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH, undefined, 'FAST');
+  pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH, undefined, 'NONE');
   pdf.save('beauty-jordan-27-floorplan.pdf');
 }
