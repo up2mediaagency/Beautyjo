@@ -60,6 +60,48 @@ export const ZONES: Record<BoothZone, ZoneMeta> = {
     color: '#94fcf9',
     textColor: '#0f172a',
   },
+  ramadanStandard: {
+    id: 'ramadanStandard',
+    nameAr: 'جناح قياسي',
+    areaLabel: 'قاعات عمان الكبرى',
+    color: '#1D3B35',
+    textColor: '#ffffff',
+  },
+  ramadanGold: {
+    id: 'ramadanGold',
+    nameAr: 'الجناح الذهبي',
+    areaLabel: 'جناح مميز',
+    color: '#eab847',
+    textColor: '#1e293b',
+  },
+  ramadanDiamond: {
+    id: 'ramadanDiamond',
+    nameAr: 'الجناح الماسي',
+    areaLabel: 'جناح رئيسي',
+    color: '#c28d45',
+    textColor: '#ffffff',
+  },
+  ramadanSilver: {
+    id: 'ramadanSilver',
+    nameAr: 'الجناح الفضي',
+    areaLabel: 'جناح مميز',
+    color: '#cbd5e1',
+    textColor: '#0f172a',
+  },
+  ramadanLobby: {
+    id: 'ramadanLobby',
+    nameAr: 'أجنحة اللوبي',
+    areaLabel: 'اللوبي الخارجي',
+    color: '#1D3B35',
+    textColor: '#ffffff',
+  },
+  ramadanEntrance: {
+    id: 'ramadanEntrance',
+    nameAr: 'صف المدخل السفلي',
+    areaLabel: 'المدخل',
+    color: '#1D3B35',
+    textColor: '#ffffff',
+  },
 };
 
 function makeBooth(

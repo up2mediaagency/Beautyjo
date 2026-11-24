@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Booth, FilterStatus } from './types';
-import { createInitialBooths } from './data/booths';
+import { Booth, FilterStatus, LayoutId } from './types';
+import { FLOOR_PLAN_LAYOUTS } from './data/layouts';
 import { TopHeader } from './components/TopHeader';
 import { SearchFilterBar } from './components/SearchFilterBar';
 import { BoothEditorPanel, SwapMode } from './components/BoothEditorPanel';
@@ -10,49 +10,36 @@ import {
   downloadFloorPlanPng,
 } from './utils/exportFloorPlan';
 
-const STORAGE_KEY = 'beauty-jordan-27-booths-v2';
-const LEGACY_STORAGE_KEY = 'beauty-jordan-27-booths-v1';
-const LABELS_STORAGE_KEY = 'beauty-jordan-27-show-labels-v1';
+const ACTIVE_LAYOUT_KEY = 'beautyjo-active-layout-v1';
 
-function loadSavedBooths(): Booth[] {
+function loadSavedLayoutId(): LayoutId {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Booth[];
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-    // Migrate exhibitor data from v1 onto updated 791x1024 coordinates if present
-    const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (legacyRaw) {
-      const legacyParsed = JSON.parse(legacyRaw) as Booth[];
-      if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
-        const legacyById = new Map(legacyParsed.map((b) => [b.id, b]));
-        return createInitialBooths().map((fresh) => {
-          const old = legacyById.get(fresh.id);
-          if (!old) return fresh;
-          return {
-            ...fresh,
-            exhibitorName: old.exhibitorName || '',
-            logoDataUrl: old.logoDataUrl ?? null,
-            logoScale: old.logoScale ?? fresh.logoScale,
-            logoAlign: old.logoAlign ?? fresh.logoAlign,
-            displayMode: old.displayMode ?? fresh.displayMode,
-            hideCode: old.hideCode ?? false,
-          };
-        });
-      }
-    }
-    return createInitialBooths();
+    const raw = localStorage.getItem(ACTIVE_LAYOUT_KEY);
+    return raw === 'ramadan59' ? 'ramadan59' : 'beauty27';
   } catch {
-    return createInitialBooths();
+    return 'beauty27';
   }
 }
 
-function loadSavedShowLabels(): boolean {
+function loadSavedBooths(layoutId: LayoutId): Booth[] {
+  const layout = FLOOR_PLAN_LAYOUTS[layoutId];
   try {
-    const raw = localStorage.getItem(LABELS_STORAGE_KEY);
+    const raw = localStorage.getItem(layout.storageKey);
+    if (!raw) return layout.createInitialBooths();
+    const parsed = JSON.parse(raw) as Booth[];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return layout.createInitialBooths();
+    }
+    return parsed;
+  } catch {
+    return layout.createInitialBooths();
+  }
+}
+
+function loadSavedShowLabels(layoutId: LayoutId): boolean {
+  const layout = FLOOR_PLAN_LAYOUTS[layoutId];
+  try {
+    const raw = localStorage.getItem(layout.labelsStorageKey);
     return raw === null ? true : raw === 'true';
   } catch {
     return true;
@@ -60,10 +47,18 @@ function loadSavedShowLabels(): boolean {
 }
 
 export function App() {
-  const [booths, setBooths] = useState<Booth[]>(loadSavedBooths);
-  const [showBoothLabels, setShowBoothLabels] = useState<boolean>(
-    loadSavedShowLabels
-  );
+  const [activeLayoutId, setActiveLayoutId] = useState<LayoutId>(loadSavedLayoutId);
+
+  const [boothsByLayout, setBoothsByLayout] = useState<Record<LayoutId, Booth[]>>(() => ({
+    beauty27: loadSavedBooths('beauty27'),
+    ramadan59: loadSavedBooths('ramadan59'),
+  }));
+
+  const [showLabelsByLayout, setShowLabelsByLayout] = useState<Record<LayoutId, boolean>>(() => ({
+    beauty27: loadSavedShowLabels('beauty27'),
+    ramadan59: loadSavedShowLabels('ramadan59'),
+  }));
+
   const [selectedBoothId, setSelectedBoothId] = useState<string | null>(null);
   const [swapMode, setSwapMode] = useState<SwapMode>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -72,22 +67,58 @@ export function App() {
 
   const exportRef = useRef<HTMLDivElement>(null);
 
-  // Auto-save to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(booths));
-    } catch {
-      // Ignore storage quota errors
-    }
-  }, [booths]);
+  const activeLayout = FLOOR_PLAN_LAYOUTS[activeLayoutId];
+  const booths = boothsByLayout[activeLayoutId];
+  const showBoothLabels = showLabelsByLayout[activeLayoutId];
 
+  // Auto-save active layout ID
   useEffect(() => {
     try {
-      localStorage.setItem(LABELS_STORAGE_KEY, String(showBoothLabels));
+      localStorage.setItem(ACTIVE_LAYOUT_KEY, activeLayoutId);
     } catch {
       // Ignore
     }
-  }, [showBoothLabels]);
+  }, [activeLayoutId]);
+
+  // Auto-save booths independently per layout
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        FLOOR_PLAN_LAYOUTS.beauty27.storageKey,
+        JSON.stringify(boothsByLayout.beauty27)
+      );
+      localStorage.setItem(
+        FLOOR_PLAN_LAYOUTS.ramadan59.storageKey,
+        JSON.stringify(boothsByLayout.ramadan59)
+      );
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [boothsByLayout]);
+
+  // Auto-save label visibility independently per layout
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        FLOOR_PLAN_LAYOUTS.beauty27.labelsStorageKey,
+        String(showLabelsByLayout.beauty27)
+      );
+      localStorage.setItem(
+        FLOOR_PLAN_LAYOUTS.ramadan59.labelsStorageKey,
+        String(showLabelsByLayout.ramadan59)
+      );
+    } catch {
+      // Ignore
+    }
+  }, [showLabelsByLayout]);
+
+  const handleSwitchLayout = useCallback((nextId: LayoutId) => {
+    setActiveLayoutId(nextId);
+    setSelectedBoothId(null);
+    setSwapMode(null);
+    setSearchQuery('');
+    setFilterStatus('all');
+  }, []);
 
   const isBoothReserved = useCallback(
     (b: Booth) => b.exhibitorName.trim() !== '' || b.logoDataUrl !== null,
@@ -113,8 +144,9 @@ export function App() {
       if (filterStatus === 'available' && reserved) return false;
       if (q) {
         const matchCode = b.code.toLowerCase().includes(q);
+        const matchId = b.id.toLowerCase().includes(q);
         const matchName = b.exhibitorName.toLowerCase().includes(q);
-        return matchCode || matchName;
+        return matchCode || matchId || matchName;
       }
       return true;
     });
@@ -133,28 +165,48 @@ export function App() {
     [booths, selectedBoothId]
   );
 
-  const handleUpdateBooth = useCallback((id: string, patch: Partial<Booth>) => {
-    setBooths((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, ...patch } : b))
-    );
-  }, []);
+  const handleUpdateBooth = useCallback(
+    (id: string, patch: Partial<Booth>) => {
+      setBoothsByLayout((prev) => ({
+        ...prev,
+        [activeLayoutId]: prev[activeLayoutId].map((b) =>
+          b.id === id ? { ...b, ...patch } : b
+        ),
+      }));
+    },
+    [activeLayoutId]
+  );
 
-  const handleResetBooth = useCallback((id: string) => {
-    const defaults = createInitialBooths();
-    const def = defaults.find((b) => b.id === id);
-    if (!def) return;
-    setBooths((prev) => prev.map((b) => (b.id === id ? def : b)));
-  }, []);
+  const handleResetBooth = useCallback(
+    (id: string) => {
+      const defaults = activeLayout.createInitialBooths();
+      const def = defaults.find((b) => b.id === id);
+      if (!def) return;
+      setBoothsByLayout((prev) => ({
+        ...prev,
+        [activeLayoutId]: prev[activeLayoutId].map((b) =>
+          b.id === id ? def : b
+        ),
+      }));
+    },
+    [activeLayoutId, activeLayout]
+  );
 
   const handleResetAll = useCallback(() => {
-    const fresh = createInitialBooths();
-    setBooths(fresh);
-    setShowBoothLabels(true);
+    const fresh = activeLayout.createInitialBooths();
+    setBoothsByLayout((prev) => ({
+      ...prev,
+      [activeLayoutId]: fresh,
+    }));
+    setShowLabelsByLayout((prev) => ({
+      ...prev,
+      [activeLayoutId]: true,
+    }));
     setSelectedBoothId(null);
     setSwapMode(null);
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(LABELS_STORAGE_KEY);
-  }, []);
+    localStorage.removeItem(activeLayout.storageKey);
+    localStorage.removeItem(activeLayout.labelsStorageKey);
+  }, [activeLayoutId, activeLayout]);
 
   const handleSelectBooth = useCallback(
     (targetId: string | null) => {
@@ -165,12 +217,13 @@ export function App() {
       }
 
       if (swapMode && selectedBoothId && targetId !== selectedBoothId) {
-        setBooths((prev) => {
-          const source = prev.find((b) => b.id === selectedBoothId);
-          const target = prev.find((b) => b.id === targetId);
+        setBoothsByLayout((prev) => {
+          const list = prev[activeLayoutId];
+          const source = list.find((b) => b.id === selectedBoothId);
+          const target = list.find((b) => b.id === targetId);
           if (!source || !target) return prev;
 
-          return prev.map((b) => {
+          const updated = list.map((b) => {
             if (b.id === source.id) {
               if (swapMode === 'brand') {
                 return {
@@ -211,6 +264,11 @@ export function App() {
             }
             return b;
           });
+
+          return {
+            ...prev,
+            [activeLayoutId]: updated,
+          };
         });
 
         setSwapMode(null);
@@ -220,13 +278,13 @@ export function App() {
 
       setSelectedBoothId(targetId);
     },
-    [swapMode, selectedBoothId]
+    [swapMode, selectedBoothId, activeLayoutId]
   );
 
   const handleExportPng = async () => {
     setIsExporting(true);
     try {
-      await downloadFloorPlanPng(booths, showBoothLabels);
+      await downloadFloorPlanPng(activeLayout, booths, showBoothLabels);
     } catch (err) {
       console.error('PNG Export error:', err);
       alert('حدث خطأ أثناء تصدير الصورة. يرجى المحاولة مرة أخرى.');
@@ -238,7 +296,7 @@ export function App() {
   const handleExportPdf = async () => {
     setIsExporting(true);
     try {
-      await downloadFloorPlanPdf(booths, showBoothLabels);
+      await downloadFloorPlanPdf(activeLayout, booths, showBoothLabels);
     } catch (err) {
       console.error('PDF Export error:', err);
       alert('حدث خطأ أثناء تصدير ملف PDF. يرجى المحاولة مرة أخرى.');
@@ -250,6 +308,8 @@ export function App() {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50">
       <TopHeader
+        activeLayout={activeLayout}
+        onSwitchLayout={handleSwitchLayout}
         totalCount={booths.length}
         reservedCount={reservedCount}
         availableCount={availableCount}
@@ -279,7 +339,12 @@ export function App() {
             filterStatus={filterStatus}
             onFilterStatusChange={setFilterStatus}
             showBoothLabels={showBoothLabels}
-            onToggleBoothLabels={() => setShowBoothLabels((v) => !v)}
+            onToggleBoothLabels={() =>
+              setShowLabelsByLayout((prev) => ({
+                ...prev,
+                [activeLayoutId]: !prev[activeLayoutId],
+              }))
+            }
             totalCount={booths.length}
             reservedCount={reservedCount}
             availableCount={availableCount}
@@ -289,6 +354,7 @@ export function App() {
           />
 
           <FloorPlanCanvas
+            layout={activeLayout}
             booths={booths}
             selectedBoothId={selectedBoothId}
             swapMode={swapMode}

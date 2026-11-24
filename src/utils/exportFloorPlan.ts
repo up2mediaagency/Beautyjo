@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { Booth } from '../types';
-import { MAP_HEIGHT, MAP_WIDTH } from '../data/booths';
+import { FloorPlanLayoutConfig } from '../data/layouts';
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -109,6 +109,7 @@ function drawAutoFitText(
 }
 
 export async function renderFloorPlanToCanvas(
+  layout: FloorPlanLayoutConfig,
   booths: Booth[],
   showBoothLabels: boolean
 ): Promise<HTMLCanvasElement> {
@@ -117,11 +118,11 @@ export async function renderFloorPlanToCanvas(
     await document.fonts.ready;
   }
 
-  // 6x scale => 4992 x 6144 px (ultra-sharp ~600 DPI on A4 & crystal-clear PNG)
+  // 6x scale for ultra-sharp ~600 DPI on A4 & crystal-clear PNG
   const SCALE = 6;
   const canvas = document.createElement('canvas');
-  canvas.width = MAP_WIDTH * SCALE;
-  canvas.height = MAP_HEIGHT * SCALE;
+  canvas.width = layout.width * SCALE;
+  canvas.height = layout.height * SCALE;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) {
@@ -131,14 +132,14 @@ export async function renderFloorPlanToCanvas(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.scale(SCALE, SCALE);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+  ctx.fillStyle = layout.floorFillColor;
+  ctx.fillRect(0, 0, layout.width, layout.height);
 
   // 1. Draw locked background image (original full-res image)
-  const bg = await loadImage('/floorplan2.jpg');
-  ctx.drawImage(bg, 0, 0, MAP_WIDTH, MAP_HEIGHT);
+  const bg = await loadImage(layout.imageSrc);
+  ctx.drawImage(bg, 0, 0, layout.width, layout.height);
 
-  // 2. Cover original booth spots with white floor fill when moved or resized
+  // 2. Cover original booth spots with floor fill when moved or resized
   for (const booth of booths) {
     const hasMovedOrResized =
       booth.x !== booth.defaultX ||
@@ -149,7 +150,7 @@ export async function renderFloorPlanToCanvas(
     if (!hasMovedOrResized) continue;
 
     ctx.save();
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = layout.floorFillColor;
     if (booth.shape === 'l-shape') {
       traceLShapePath(
         ctx,
@@ -213,6 +214,11 @@ export async function renderFloorPlanToCanvas(
     } else {
       ctx.fillStyle = booth.color;
       ctx.fillRect(bx, by, bw, bh);
+      if (layout.id === 'ramadan59') {
+        ctx.strokeStyle = '#9c8248';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
+      }
     }
 
     // Content area: for Q1 L-shape, use the bottom horizontal arm (59%..100% height)
@@ -312,10 +318,11 @@ export async function renderFloorPlanToCanvas(
 }
 
 export async function downloadFloorPlanPng(
+  layout: FloorPlanLayoutConfig,
   booths: Booth[],
   showBoothLabels: boolean
 ) {
-  const canvas = await renderFloorPlanToCanvas(booths, showBoothLabels);
+  const canvas = await renderFloorPlanToCanvas(layout, booths, showBoothLabels);
   const blob = await new Promise<Blob | null>((resolve) =>
     canvas.toBlob((b) => resolve(b), 'image/png', 1.0)
   );
@@ -325,7 +332,7 @@ export async function downloadFloorPlanPng(
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = 'beauty-jordan-27-floorplan.png';
+  link.download = `${layout.exportFilePrefix}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -333,10 +340,11 @@ export async function downloadFloorPlanPng(
 }
 
 export async function downloadFloorPlanPdf(
+  layout: FloorPlanLayoutConfig,
   booths: Booth[],
   showBoothLabels: boolean
 ) {
-  const canvas = await renderFloorPlanToCanvas(booths, showBoothLabels);
+  const canvas = await renderFloorPlanToCanvas(layout, booths, showBoothLabels);
   const imgData = canvas.toDataURL('image/png', 1.0);
 
   const pdf = new jsPDF({
@@ -351,12 +359,12 @@ export async function downloadFloorPlanPdf(
   const maxW = pageW - margin * 2;
   const maxH = pageH - margin * 2;
 
-  const ratio = Math.min(maxW / MAP_WIDTH, maxH / MAP_HEIGHT);
-  const drawW = MAP_WIDTH * ratio;
-  const drawH = MAP_HEIGHT * ratio;
+  const ratio = Math.min(maxW / layout.width, maxH / layout.height);
+  const drawW = layout.width * ratio;
+  const drawH = layout.height * ratio;
   const offsetX = (pageW - drawW) / 2;
   const offsetY = (pageH - drawH) / 2;
 
   pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH, undefined, 'NONE');
-  pdf.save('beauty-jordan-27-floorplan.pdf');
+  pdf.save(`${layout.exportFilePrefix}.pdf`);
 }

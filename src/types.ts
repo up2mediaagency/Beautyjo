@@ -1,3 +1,5 @@
+export type LayoutId = 'beauty27' | 'ramadan59';
+
 export type BoothZone =
   | 'diamond'
   | 'platinum'
@@ -6,7 +8,13 @@ export type BoothZone =
   | 'green'
   | 'lightPurple'
   | 'darkPurple'
-  | 'lightBlue';
+  | 'lightBlue'
+  | 'ramadanStandard'
+  | 'ramadanGold'
+  | 'ramadanDiamond'
+  | 'ramadanSilver'
+  | 'ramadanLobby'
+  | 'ramadanEntrance';
 
 export type DisplayMode = 'both' | 'logo' | 'name';
 export type LogoAlign = 'center' | 'top' | 'bottom' | 'right' | 'left';

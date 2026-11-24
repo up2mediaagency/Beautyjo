@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Download, FileText, RotateCcw, Map, Loader2 } from 'lucide-react';
+import { LayoutId } from '../types';
+import { FLOOR_PLAN_LAYOUTS, FloorPlanLayoutConfig } from '../data/layouts';
 
 interface TopHeaderProps {
+  activeLayout: FloorPlanLayoutConfig;
+  onSwitchLayout: (id: LayoutId) => void;
   totalCount: number;
   reservedCount: number;
   availableCount: number;
@@ -12,6 +16,8 @@ interface TopHeaderProps {
 }
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
+  activeLayout,
+  onSwitchLayout,
   totalCount,
   reservedCount,
   availableCount,
@@ -22,9 +28,14 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
 }) => {
   const [confirmReset, setConfirmReset] = useState(false);
 
+  const layoutTabs: FloorPlanLayoutConfig[] = [
+    FLOOR_PLAN_LAYOUTS.beauty27,
+    FLOOR_PLAN_LAYOUTS.ramadan59,
+  ];
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 lg:px-6">
         {/* Brand & Title */}
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600 ring-1 ring-sky-200/80">
@@ -32,16 +43,38 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           </div>
           <div>
             <h1 className="text-base font-bold text-slate-900 sm:text-lg">
-              مخطط بيوتي الأردن 27
+              {activeLayout.titleAr}
             </h1>
-            <p className="text-xs text-slate-500">
-              محرر المخطط التفاعلي لتوزيع الأجنحة والعارضين
-            </p>
+            <p className="text-xs text-slate-500">{activeLayout.subtitleAr}</p>
           </div>
         </div>
 
+        {/* Layout Switcher Tabs */}
+        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100 p-1">
+          {layoutTabs.map((tab) => {
+            const isActive = activeLayout.id === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setConfirmReset(false);
+                  onSwitchLayout(tab.id);
+                }}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  isActive
+                    ? 'bg-white text-sky-700 shadow-xs ring-1 ring-slate-200/80'
+                    : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
+                }`}
+              >
+                {tab.tabLabelAr}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Live Counters */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs">
             <span className="text-slate-500">إجمالي الأجنحة:</span>
             <span className="font-bold text-slate-900">{totalCount}</span>

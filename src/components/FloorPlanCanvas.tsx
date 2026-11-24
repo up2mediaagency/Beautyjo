@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { AlignmentGuide, Booth } from '../types';
-import { MAP_HEIGHT, MAP_WIDTH } from '../data/booths';
+import { FloorPlanLayoutConfig } from '../data/layouts';
 import { SwapMode } from './BoothEditorPanel';
 
 const L_SHAPE_CLIP =
@@ -64,6 +64,7 @@ const AutoFitText: React.FC<AutoFitTextProps> = ({
 };
 
 interface FloorPlanCanvasProps {
+  layout: FloorPlanLayoutConfig;
   booths: Booth[];
   selectedBoothId: string | null;
   swapMode: SwapMode;
@@ -99,6 +100,7 @@ type DragState =
     };
 
 export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
+  layout,
   booths,
   selectedBoothId,
   swapMode,
@@ -119,11 +121,11 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
     const el = viewportRef.current;
     if (!el) return;
     const pad = 40;
-    const scaleX = (el.clientWidth - pad) / MAP_WIDTH;
-    const scaleY = (el.clientHeight - pad) / MAP_HEIGHT;
+    const scaleX = (el.clientWidth - pad) / layout.width;
+    const scaleY = (el.clientHeight - pad) / layout.height;
     const next = Math.min(scaleX, scaleY, 1.15);
     setZoom(Math.max(0.35, Number(next.toFixed(2))));
-  }, []);
+  }, [layout.width, layout.height]);
 
   useEffect(() => {
     fitToScreen();
@@ -181,11 +183,11 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
 
         let nextX = Math.max(
           0,
-          Math.min(MAP_WIDTH - targetBooth.w, dragState.origX + dx)
+          Math.min(layout.width - targetBooth.w, dragState.origX + dx)
         );
         let nextY = Math.max(
           0,
-          Math.min(MAP_HEIGHT - targetBooth.h, dragState.origY + dy)
+          Math.min(layout.height - targetBooth.h, dragState.origY + dy)
         );
 
         // Snap & alignment guides against other booths
@@ -271,7 +273,7 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [dragState, zoom, booths, onUpdateBooth]);
+  }, [dragState, zoom, booths, onUpdateBooth, layout.width, layout.height]);
 
   const getLogoFlexAlign = (align: Booth['logoAlign']) => {
     switch (align) {
@@ -311,14 +313,14 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
       <div
         className="mx-auto flex items-start justify-center"
         style={{
-          width: MAP_WIDTH * zoom,
-          height: MAP_HEIGHT * zoom,
+          width: layout.width * zoom,
+          height: layout.height * zoom,
         }}
       >
         <div
           style={{
-            width: MAP_WIDTH,
-            height: MAP_HEIGHT,
+            width: layout.width,
+            height: layout.height,
             transform: `scale(${zoom})`,
             transformOrigin: 'top center',
           }}
@@ -333,18 +335,22 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
                 onSelectBooth(null);
               }
             }}
-            style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
-            className="relative overflow-hidden bg-white shadow-md ring-1 ring-slate-200"
+            style={{
+              width: layout.width,
+              height: layout.height,
+              backgroundColor: layout.floorFillColor,
+            }}
+            className="relative overflow-hidden shadow-md ring-1 ring-slate-200"
           >
             {/* Locked Built-in Floor Plan Background */}
             <img
-              src="/floorplan2.jpg"
-              alt="مخطط بيوتي الأردن 27"
+              src={layout.imageSrc}
+              alt={layout.titleAr}
               draggable={false}
               className="pointer-events-none block h-full w-full select-none"
             />
 
-            {/* Layer 1: Cover original booth spots with white floor fill when moved or resized */}
+            {/* Layer 1: Cover original booth spots with floor fill when moved or resized */}
             {booths.map((booth) => {
               const hasMovedOrResized =
                 booth.x !== booth.defaultX ||
@@ -357,12 +363,13 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
               return (
                 <div
                   key={`cover-${booth.id}`}
-                  className="pointer-events-none absolute bg-white"
+                  className="pointer-events-none absolute"
                   style={{
                     left: booth.defaultX - 1,
                     top: booth.defaultY - 1,
                     width: booth.defaultW + 2,
                     height: booth.defaultH + 2,
+                    backgroundColor: layout.floorFillColor,
                     clipPath:
                       booth.shape === 'l-shape' ? L_SHAPE_CLIP : undefined,
                   }}
@@ -430,6 +437,10 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
                     height: isModified ? booth.h + 2 : booth.h,
                     backgroundColor: isModified ? booth.color : 'transparent',
                     color: booth.textColor,
+                    border:
+                      isModified && layout.id === 'ramadan59'
+                        ? '1px solid #9c8248'
+                        : undefined,
                     clipPath:
                       booth.shape === 'l-shape' ? L_SHAPE_CLIP : undefined,
                     opacity: isDimmed ? 0.22 : 1,
